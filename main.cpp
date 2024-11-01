@@ -1,7 +1,9 @@
 
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <cstdint>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -84,44 +86,49 @@ protected:
         return static_cast<Int>(val);
     }
 
+    template<isObjectIntAndNumber T1>
+    constexpr Int& equal(const T1& other, const std::function<T1(T1)>& func)
+    {
+        if (isObjectInt<T1> && *this == other)
+            return *this;
+
+        _value = func(other);
+        return *this;
+    }
+
+    template<isObjectInt T1>
+    static constexpr T1 tp(const T1& t)
+    {
+        return isObjectInt<T1> ? static_cast<T1>(t) : t;
+    }
+
 public:
     Int() : _value(0) {}
-    Int(const T& val) : _value(val) {}
-    Int(T&& val) : _value(val) {}
+    explicit Int(const T& val) : _value(val) {}
+    explicit Int(T&& val) : _value(val) {}
     Int(const Int& other) = default;
     Int(Int&& other) noexcept : _value{std::move(other._value)} {}
     ~Int() = default;
 
     template<isNumber T1>
-    constexpr Int& operator=(const Int<T1>& other)
-    {
-        if (this == &other)
-            return *this;
-        _value = other._value;
-        return *this;
-    }
+    explicit Int(const Int<T1>& other) : _value(static_cast<T1>(other)) {}
 
     template<isNumber T1>
+    explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
+
+    template<isObjectIntAndNumber T1>
     constexpr Int& operator=(const T1& other)
     {
-        _value = other;
-        return *this;
+        return equal<T1>(other, tp<T1>);
     }
 
-    template<isNumber T1>
-    constexpr Int& operator=(Int<T1>&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
-        _value = std::move(other._value);
-        return *this;
-    }
-
-    template<isNumber T1>
+    template<isObjectIntAndNumber T1>
     constexpr Int& operator=(T1&& other) noexcept
     {
-        _value = std::forward<T1>(other);
-        return *this;
+        return equal<T1>(other, [](const T1& t) -> T1
+        {
+            return std::move(tp<T1>(t));
+        });
     }
 
     Int& operator++()
@@ -245,17 +252,15 @@ using uint8 = Int<uint8_t>;
 
 int main()
 {
-    int32 i{0};
-    int8 t{1};
+    int32 i{90};
+    int16 k{8};
 
-    std::cout << "i - " << i.size() << ' ' << i.sizeValue() << '\n';
-    std::cout << "t - " << t.size() << ' ' << t.sizeValue() << '\n';
-    std::cout << (t /= i) << '\n';
-    std::cout << (i /= 0) << '\n';
-    std::cout << (i += ' ') << '\n';
-    std::cout << i << '\n';
-
+    k = i;
     i = 90;
+    k = 9;
+    i = k;
+
+    std::cout << k << ' ' << i << '\n';
 
     return 0;
 }
