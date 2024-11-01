@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <cstdint>
@@ -86,11 +87,17 @@ protected:
 
 public:
     Int() : _value(0) {}
-    Int(const T& val) : _value(val) {}
-    Int(T&& val) : _value(val) {}
+    explicit Int(const T& val) : _value(val) {}
+    explicit Int(T&& val) : _value(val) {}
     Int(const Int& other) = default;
     Int(Int&& other) noexcept : _value{std::move(other._value)} {}
     ~Int() = default;
+
+    template<isNumber T1>
+    explicit Int(const Int<T1>& other) : _value(static_cast<T1>(other)) {}
+
+    template<isNumber T1>
+    explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
 
     template<isNumber T1>
     constexpr Int& operator=(const Int<T1>& other)
@@ -245,18 +252,10 @@ using uint8 = Int<uint8_t>;
 
 int main()
 {
+    int32 i{90};
+    int16 k{i};
 
-    int32 i{0};
-    int8 t{1};
-
-    std::cout << "i - " << i.size() << ' ' << i.sizeValue() << '\n';
-    std::cout << "t - " << t.size() << ' ' << t.sizeValue() << '\n';
-    std::cout << (t /= i) << '\n';
-    std::cout << (i /= 0) << '\n';
-    std::cout << (i += ' ') << '\n';
-    std::cout << i << '\n';
-
-    i = 90;
+    std::cout << k << '\n';
 
     return 0;
 }
