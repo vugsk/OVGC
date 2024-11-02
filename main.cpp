@@ -1,12 +1,12 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <concepts>
 #include <cstdint>
 #include <functional>
 #include <iostream>
 #include <map>
-#include <vector>
 
 template<typename T>
 concept isNumber = std::integral<T>;
@@ -21,21 +21,9 @@ template<isNumber T>
 class Int
 {
 protected:
-    using rangeInt = std::pair<int32_t, int32_t>;
-    using rangeIntType = std::pair<std::string, rangeInt>;
     using ratioOfIntTypes = std::pair<std::string, std::string>;
 
     #if __GNUC__
-        static inline const std::vector<rangeIntType> VECTOR_RANGE_INT_TYPES
-        {
-            rangeIntType{"a", rangeInt{INT8_MIN, INT8_MAX}},
-            rangeIntType{"i", rangeInt{INT32_MIN, INT32_MAX}},
-            rangeIntType{"s", rangeInt{INT16_MIN, INT16_MAX}},
-            rangeIntType{"t", rangeInt{0, UINT16_MAX}},
-            rangeIntType{"j", rangeInt{0, UINT32_MAX}},
-            rangeIntType{"h", rangeInt{0, UINT8_MAX}},
-        };
-
         static constexpr uint8_t SIZE_ARRAY_INT_TYPES = 6;
         static inline const std::array<ratioOfIntTypes, SIZE_ARRAY_INT_TYPES> ARRAY_INT_TYPES
         {
@@ -51,27 +39,30 @@ protected:
     #elif __MINGW64__
     #endif
 
+    static constexpr uint8_t ter()
+    {
+        switch (sizeof(_value))
+        {
+            case 1:
+                return isSigned ? 8 : 7;
+            case 2:
+                return isSigned ? 16 : 15;
+            case 4:
+                return isSigned ? 32 : 31;
+            default:
+                return 0;
+        }
+    }
+
+    static constexpr bool isSigned = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
+    static constexpr int64_t ioo = static_cast<int64_t>(pow(2, ter()));
 
     T _value;
 
-    static constexpr Int findsRangeOfIntegerType(const bool is)
-    {
-        const auto i = std::ranges::find_if(VECTOR_RANGE_INT_TYPES,
-            [](const rangeIntType& idType) -> bool
-        {
-            return idType.first == TYPE_VALUE;
-        });
-
-        if (i != VECTOR_RANGE_INT_TYPES.end())
-            return is ? i->second.second : i->second.first;
-        return 0;
-    }
-
     static constexpr bool isTypeInt8()
     {
-        return TYPE_VALUE == VECTOR_RANGE_INT_TYPES[0].first ||
-               TYPE_VALUE == VECTOR_RANGE_INT_TYPES[5].first;
+        return TYPE_VALUE == std::string{"a"} || TYPE_VALUE == std::string{"h"};
     }
 
     template<isNumber T1>
@@ -216,16 +207,14 @@ public:
         return static_cast<Int<uint8_t>>(sizeof(*this));
     }
 
-    [[nodiscard]] static constexpr Int max()
+    [[nodiscard]] static constexpr Int<int64_t> max()
     {
-        constexpr auto IS_SIZE_TYPE_MAX = true;
-        return findsRangeOfIntegerType(IS_SIZE_TYPE_MAX);
+        return Int<int64_t>(ioo - 1);
     }
 
-    [[nodiscard]] static constexpr Int min()
+    [[nodiscard]] static constexpr Int<int64_t> min()
     {
-        constexpr auto IS_SIZE_TYPE_MIN = false;
-        return findsRangeOfIntegerType(IS_SIZE_TYPE_MIN);
+        return Int<int64_t>(isSigned ? ioo * -1 : 0);
     }
 
     [[nodiscard]] static constexpr std::string getType()
@@ -239,6 +228,7 @@ public:
             return i->second;
         return std::string{};
     }
+
 };
 
 using int32 = Int<int32_t>;
@@ -252,15 +242,7 @@ using uint8 = Int<uint8_t>;
 
 int main()
 {
-    int32 i{90};
-    int16 k{8};
-
-    k = i;
-    i = 90;
-    k = 9;
-    i = k;
-
-    std::cout << k << ' ' << i << '\n';
-
+    uint32 i{90};
+    std::cout << i.max() << ' ' << i.min() << '\n';
     return 0;
 }
