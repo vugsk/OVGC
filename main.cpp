@@ -39,24 +39,25 @@ protected:
     #elif __MINGW64__
     #endif
 
-    static constexpr uint8_t ter()
+    static constexpr uint8_t definitMagnitudinemGeneris()
     {
         switch (sizeof(_value))
         {
             case 1:
-                return isSigned ? 8 : 7;
+                return IS_SIGNED ? 8 : 7;
             case 2:
-                return isSigned ? 16 : 15;
+                return IS_SIGNED ? 16 : 15;
             case 4:
-                return isSigned ? 32 : 31;
+                return IS_SIGNED ? 32 : 31;
             default:
                 return 0;
         }
     }
 
-    static constexpr bool isSigned = std::is_signed_v<T>;
+    static constexpr bool IS_SIGNED = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
-    static constexpr int64_t ioo = static_cast<int64_t>(pow(2, ter()));
+    static constexpr int64_t MAGNITUDINEM_ПENERIS_СOMPUTAT =
+        static_cast<int64_t>(pow(2, definitMagnitudinemGeneris()));
 
     T _value;
 
@@ -209,12 +210,12 @@ public:
 
     [[nodiscard]] static constexpr Int<int64_t> max()
     {
-        return Int<int64_t>(ioo - 1);
+        return Int<int64_t>(MAGNITUDINEM_ПENERIS_СOMPUTAT - 1);
     }
 
     [[nodiscard]] static constexpr Int<int64_t> min()
     {
-        return Int<int64_t>(isSigned ? ioo * -1 : 0);
+        return Int<int64_t>(IS_SIGNED ? MAGNITUDINEM_ПENERIS_СOMPUTAT * -1 : 0);
     }
 
     [[nodiscard]] static constexpr std::string getType()
@@ -234,10 +235,12 @@ public:
 using int32 = Int<int32_t>;
 using int16 = Int<int16_t>;
 using int8 = Int<int8_t>;
+using int64 = Int<int64_t>;
 
 using uint32 = Int<uint32_t>;
 using uint16 = Int<uint16_t>;
 using uint8 = Int<uint8_t>;
+using uint64 = Int<uint64_t>;
 
 
 int main()
