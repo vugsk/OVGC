@@ -1,12 +1,10 @@
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <concepts>
 #include <cstdint>
 #include <functional>
 #include <iostream>
-#include <map>
 
 template<typename T>
 concept isNumber = std::integral<T>;
@@ -21,53 +19,33 @@ template<isNumber T>
 class Int
 {
 protected:
-    using ratioOfIntTypes = std::pair<std::string, std::string>;
-
-    #if __GNUC__
-        static constexpr uint8_t SIZE_ARRAY_INT_TYPES = 6;
-        static inline const std::array<ratioOfIntTypes, SIZE_ARRAY_INT_TYPES> ARRAY_INT_TYPES
-        {
-            ratioOfIntTypes("a", "int8_t"),
-            ratioOfIntTypes("i", "int32_t"),
-            ratioOfIntTypes("s", "int16_t"),
-            ratioOfIntTypes("t", "uint16_t"),
-            ratioOfIntTypes("j", "uint32_t"),
-            ratioOfIntTypes("h", "uint8_t"),
-        };
-    #elif _MSV_VER
-    #elif _clang_
-    #elif __MINGW64__
-    #endif
-
-    static constexpr uint8_t definitMagnitudinemGeneris()
-    {
-        switch (sizeof(_value))
-        {
-            case 1:
-                return IS_SIGNED ? 8 : 7;
-            case 2:
-                return IS_SIGNED ? 16 : 15;
-            case 4:
-                return IS_SIGNED ? 32 : 31;
-            default:
-                return 0;
-        }
-    }
-
     static constexpr bool IS_SIGNED = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
-    static constexpr int64_t MAGNITUDINEM_ПENERIS_СOMPUTAT =
-        static_cast<int64_t>(pow(2, definitMagnitudinemGeneris()));
 
     T _value;
 
+    static constexpr T calculatesSizeOfType()
+    {
+        return static_cast<T>(pow(2, []() -> double
+        {
+            switch (sizeof(_value))
+            {
+                case 1:  return !IS_SIGNED ? 8  : 7;
+                case 2:  return !IS_SIGNED ? 16 : 15;
+                case 4:  return !IS_SIGNED ? 32 : 31;
+                case 8:  return !IS_SIGNED ? 64 : 63;
+                default: return 0;
+            }
+        }()));
+    }
+
     static constexpr bool isTypeInt8()
     {
-        return TYPE_VALUE == std::string{"a"} || TYPE_VALUE == std::string{"h"};
+        return getType() == "int8" || getType() == "uint8";
     }
 
     template<isNumber T1>
-    static constexpr Int ty(const Int<T1>& val)
+    static constexpr Int circumcisionOfValue(const Int<T1>& val)
     {
         if (val > max())
             return max();
@@ -88,12 +66,6 @@ protected:
         return *this;
     }
 
-    template<isObjectInt T1>
-    static constexpr T1 tp(const T1& t)
-    {
-        return isObjectInt<T1> ? static_cast<T1>(t) : t;
-    }
-
 public:
     Int() : _value(0) {}
     explicit Int(const T& val) : _value(val) {}
@@ -111,7 +83,10 @@ public:
     template<isObjectIntAndNumber T1>
     constexpr Int& operator=(const T1& other)
     {
-        return equal<T1>(other, tp<T1>);
+        return equal<T1>(other, [](const T1& t) -> T1
+        {
+            return isObjectInt<T1> ? static_cast<T1>(t) : t;
+        });
     }
 
     template<isObjectIntAndNumber T1>
@@ -119,7 +94,7 @@ public:
     {
         return equal<T1>(other, [](const T1& t) -> T1
         {
-            return std::move(tp<T1>(t));
+            return std::move(isObjectInt<T1> ? static_cast<T1>(t) : t);
         });
     }
 
@@ -153,28 +128,29 @@ public:
     template<isObjectIntAndNumber T1>
     constexpr Int& operator+=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value + val));
+        _value = circumcisionOfValue(Int<int32_t>(_value + val));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator-=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value - val));
+        _value = circumcisionOfValue(Int<int32_t>(_value - val));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator*=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value * val));
+        _value = circumcisionOfValue(Int<int32_t>(_value * val));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator/=(const T1& val)
     {
-        _value = static_cast<int32_t>(val) == 0 ? static_cast<Int>(val) : ty(Int<int32_t>(_value / val));
+        _value = static_cast<int32_t>(val) == 0 ? static_cast<Int>(val)
+                                                : circumcisionOfValue(Int<int32_t>(_value / val));
         return *this;
     }
 
@@ -193,9 +169,18 @@ public:
         return std::to_string(_value);
     }
 
-    [[nodiscard]] static constexpr Int<int32_t> convertToInt(const std::string& str)
+    [[nodiscard]] static constexpr Int<uint64_t> convertToUnsignedInt(const std::string& str)
     {
-        return static_cast<Int<int32_t>>(std::stoi(str));
+        if (str.empty())
+            return Int<uint64_t>{};
+        return static_cast<Int<uint64_t>>(std::stoull(str));
+    }
+
+    [[nodiscard]] static constexpr Int<int64_t> convertToSignedInt(const std::string& str)
+    {
+        if (str.empty())
+            return Int<int64_t>{};
+        return static_cast<Int<int64_t>>(std::stoll(str));
     }
 
     [[nodiscard]] constexpr Int<uint8_t> sizeValue() const
@@ -208,28 +193,39 @@ public:
         return static_cast<Int<uint8_t>>(sizeof(*this));
     }
 
-    [[nodiscard]] static constexpr Int<int64_t> max()
+    [[nodiscard]] static constexpr Int max()
     {
-        return Int<int64_t>(MAGNITUDINEM_ПENERIS_СOMPUTAT - 1);
+        return Int(calculatesSizeOfType() - 1);
     }
 
-    [[nodiscard]] static constexpr Int<int64_t> min()
+    [[nodiscard]] static constexpr Int min()
     {
-        return Int<int64_t>(IS_SIGNED ? MAGNITUDINEM_ПENERIS_СOMPUTAT * -1 : 0);
+
+        return Int(IS_SIGNED ? calculatesSizeOfType() * -1 : 0);
     }
 
     [[nodiscard]] static constexpr std::string getType()
     {
-        const auto i = std::ranges::find_if(ARRAY_INT_TYPES,
-            [](const std::pair<std::string, std::string>& si) -> bool
-        {
-            return si.first == TYPE_VALUE;
-        });
-        if (i != ARRAY_INT_TYPES.end())
-            return i->second;
-        return std::string{};
-    }
+        #if __GNUC__
+            switch (TYPE_VALUE[0])
+            {
+                case 'a': return "int8";
+                case 's': return "int16";
+                case 'i': return "int32";
+                case 'x': return "int64";
 
+                case 'h': return "uint8";
+                case 't': return "uint16";
+                case 'j': return "uint32";
+                case 'y': return "uint64";
+
+                default:  return std::string{};
+            }
+        #elif _MSV_VER
+        #elif _clang_
+        #elif __MINGW64__
+        #endif
+    }
 };
 
 using int32 = Int<int32_t>;
@@ -245,7 +241,7 @@ using uint64 = Int<uint64_t>;
 
 int main()
 {
-    uint32 i{90};
-    std::cout << i.max() << ' ' << i.min() << '\n';
+    int8 op(89);
+    std::cout << op << '\n';
     return 0;
 }
