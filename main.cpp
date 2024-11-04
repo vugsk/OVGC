@@ -1,10 +1,10 @@
 
-#include <array>
+#include <algorithm>
+#include <cmath>
 #include <concepts>
 #include <cstdint>
+#include <functional>
 #include <iostream>
-#include <map>
-#include <vector>
 
 template<typename T>
 concept isNumber = std::integral<T>;
@@ -18,175 +18,243 @@ concept isObjectIntAndNumber = isObjectInt<T> || isNumber<T>;
 template<isNumber T>
 class Int
 {
-protected:
-    using rangeInt = std::pair<int32_t, int32_t>;
-    using rangeIntType = std::pair<std::string, rangeInt>;
-    using ratioOfIntTypes = std::pair<std::string, std::string>;
+private:
+    enum TYPES : uint8_t
+    {
+        NONE,
+        INT8,
+        INT16,
+        INT32,
+        INT64,
+        UINT8,
+        UINT16,
+        UINT32,
+        UINT64,
+    };
 
-    #if __GNUC__
-        static inline const std::vector<rangeIntType> VECTOR_RANGE_INT_TYPES
-        {
-            rangeIntType{"a", rangeInt{INT8_MIN, INT8_MAX}},
-            rangeIntType{"i", rangeInt{INT32_MIN, INT32_MAX}},
-            rangeIntType{"s", rangeInt{INT16_MIN, INT16_MAX}},
-            rangeIntType{"t", rangeInt{0, UINT16_MAX}},
-            rangeIntType{"j", rangeInt{0, UINT32_MAX}},
-            rangeIntType{"h", rangeInt{0, UINT8_MAX}},
-        };
-
-        static constexpr uint8_t SIZE_ARRAY_INT_TYPES = 6;
-        static inline const std::array<ratioOfIntTypes, SIZE_ARRAY_INT_TYPES> ARRAY_INT_TYPES
-        {
-            ratioOfIntTypes("a", "int8_t"),
-            ratioOfIntTypes("i", "int32_t"),
-            ratioOfIntTypes("s", "int16_t"),
-            ratioOfIntTypes("t", "uint16_t"),
-            ratioOfIntTypes("j", "uint32_t"),
-            ratioOfIntTypes("h", "uint8_t"),
-        };
-    #elif _MSV_VER
-    #elif _clang_
-    #elif __MINGW64__
-    #endif
-
+    static constexpr bool IS_SIGNED = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
 
     T _value;
 
-    static constexpr Int findsRangeOfIntegerType(const bool is)
+
+    [[nodiscard]] static constexpr T calculatesSizeOfType()
     {
-        const auto i = std::ranges::find_if(VECTOR_RANGE_INT_TYPES,
-            [](const rangeIntType& idType) -> bool
+        return static_cast<T>(pow(2, []() -> double
         {
-            return idType.first == TYPE_VALUE;
-        });
-
-        if (i != VECTOR_RANGE_INT_TYPES.end())
-            return is ? i->second.second : i->second.first;
-        return 0;
+            switch (sizeof(T))
+            {
+                case 1:  return !IS_SIGNED ? 8  : 7;
+                case 2:  return !IS_SIGNED ? 16 : 15;
+                case 4:  return !IS_SIGNED ? 32 : 31;
+                case 8:  return !IS_SIGNED ? 64 : 63;
+                default: return 0;
+            }
+        }()));
     }
-
-    static constexpr bool isTypeInt8()
+    // compilation
+    [[nodiscard]] static consteval bool isTypeInt8()
     {
-        return TYPE_VALUE == VECTOR_RANGE_INT_TYPES[0].first ||
-               TYPE_VALUE == VECTOR_RANGE_INT_TYPES[5].first;
+        return types() == INT8 || types() == UINT8;
     }
+
 
     template<isNumber T1>
-    static constexpr Int ty(const Int<T1>& val)
+    [[nodiscard]] static constexpr T circumcisionOfValue(const Int<T1>& val)
     {
         if (val > max())
-            return max();
+            return convertTypes(max());
 
         if (val < max() && val < min())
-            return min();
+            return convertTypes(min());
 
-        return static_cast<Int>(val);
+        return convertTypes(val);
+    }
+
+    template<isObjectInt T1>
+    [[nodiscard]] static constexpr T convertTypes(const T1& type)
+    {
+        return static_cast<T>(type);
+    }
+
+    // compilation
+    template<isNumber T1>
+    [[nodiscard]] static consteval std::istream& inputFromStream(std::istream& os, Int<T1>& other)
+    {
+        int64_t i;
+        os >> i;
+        other = static_cast<T1>(circumcisionOfValue(Int(i)));
+        return os;
+    }
+
+    // compilation
+    [[nodiscard]] static consteval TYPES types()
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, int8_t>)
+            return INT8;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int16_t>)
+            return INT16;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int32_t>)
+            return INT32;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int64_t>)
+            return INT64;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint8_t>)
+            return UINT8;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint16_t>)
+            return UINT16;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint32_t>)
+            return UINT32;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>)
+            return UINT64;
+        else
+            return NONE;
     }
 
 public:
     Int() : _value(0) {}
-    Int(const T& val) : _value(val) {}
-    Int(T&& val) : _value(val) {}
+    explicit Int(const T& val) : _value(val) {}
+    explicit Int(T&& val) : _value(val) {}
     Int(const Int& other) = default;
     Int(Int&& other) noexcept : _value{std::move(other._value)} {}
     ~Int() = default;
 
     template<isNumber T1>
-    constexpr Int& operator=(const Int<T1>& other)
-    {
-        if (this == &other)
-            return *this;
-        _value = other._value;
-        return *this;
-    }
+    explicit Int(const Int<T1>& other) : _value(static_cast<T1>(other)) {}
 
     template<isNumber T1>
+    explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
+
+    template<isNumber T1>
+    explicit operator T1() const
+    {
+        return isTypeInt8() ? static_cast<int16_t>(_value) : static_cast<T1>(_value);
+    }
+
+    template<isObjectIntAndNumber T1>
     constexpr Int& operator=(const T1& other)
     {
-        _value = other;
+        _value = isObjectInt<T1> ? static_cast<T1>(other) : other;
         return *this;
     }
 
-    template<isNumber T1>
-    constexpr Int& operator=(Int<T1>&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
-        _value = std::move(other._value);
-        return *this;
-    }
-
-    template<isNumber T1>
+    template<isObjectIntAndNumber T1>
     constexpr Int& operator=(T1&& other) noexcept
     {
-        _value = std::forward<T1>(other);
+        _value = std::move(isObjectInt<T1> ? static_cast<T1>(other) : other);
         return *this;
     }
 
-    Int& operator++()
+    constexpr Int& operator++()
     {
         ++_value;
         return *this;
     }
-
-    Int operator++(int)
+    constexpr Int operator++(int)
     {
         Int temp(*this);
         ++_value;
         return temp;
     }
-
-    Int& operator--()
+    constexpr Int& operator--()
     {
         --_value;
         return *this;
     }
-
-    Int operator--(int)
+    constexpr Int operator--(int)
     {
         Int temp = *this;
         --_value;
         return temp;
     }
 
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator>(const T1& val) const
+    {
+        return _value > convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator<(const T1& val) const
+    {
+        return _value < convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator>=(const T1& val) const
+    {
+        return _value >= convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator<=(const T1& val) const
+    {
+        return _value <= convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator+(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator-(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator/(const T1& val) const
+    {
+        return static_cast<int8_t>(val)
+            ? Int(circumcisionOfValue(Int<int64_t>(_value / convertTypes(val))))
+            : Int{};
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator*(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value * convertTypes(val))));
+    }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator+=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value + val));
+        _value = circumcisionOfValue(Int<int64_t>(_value + convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator-=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value - val));
+        _value = circumcisionOfValue(Int<int64_t>(_value - convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator*=(const T1& val)
     {
-        _value = ty(Int<int32_t>(_value * val));
+        _value = circumcisionOfValue(Int<int64_t>(_value * convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator/=(const T1& val)
     {
-        _value = static_cast<int32_t>(val) == 0 ? static_cast<Int>(val) : ty(Int<int32_t>(_value / val));
+        _value = static_cast<int8_t>(val) ? circumcisionOfValue(Int<int64_t>(_value / val))
+                                          : convertTypes(val);
         return *this;
     }
 
     friend constexpr std::ostream& operator<<(std::ostream& os, const Int& other)
     {
-        return os << (isTypeInt8() ? static_cast<int16_t>(other._value) : other._value);
+        return os << (isTypeInt8() ? static_cast<int16_t>(convertTypes(other)) : convertTypes(other));
     }
 
-    operator T() const
+    friend constexpr std::istream& operator>>(std::istream& os, Int& other)
     {
-        return isTypeInt8() ? static_cast<int16_t>(_value) : _value;
+        return isTypeInt8() ? inputFromStream(os, reinterpret_cast<Int<int16_t>&>(other))
+                            : ui(os, other);
     }
 
     [[nodiscard]] std::string convertToString() const
@@ -194,68 +262,75 @@ public:
         return std::to_string(_value);
     }
 
-    [[nodiscard]] static constexpr Int<int32_t> convertToInt(const std::string& str)
+    template<isObjectInt T1>
+    [[nodiscard]] static constexpr T1 convertToInt(const std::string& str)
     {
-        return static_cast<Int<int32_t>>(std::stoi(str));
+        if (str.empty())
+            return T1{};
+
+        switch (types())
+        {
+            case INT8:
+            case INT16:
+            case INT32: return T1(std::stoi(str));
+            case INT64: return T1(std::stoll(str));
+            case UINT8:
+            case UINT16:
+            case UINT32: return T1(std::stoul(str));
+            case UINT64: return T1(std::stoull(str));
+            default:     return T1{};
+        }
     }
 
-    [[nodiscard]] constexpr Int<uint8_t> sizeValue() const
+    [[nodiscard]] static constexpr Int<uint8_t> sizeValue()
     {
-        return static_cast<Int<uint8_t>>(sizeof(_value));
+        return static_cast<Int<uint8_t>>(sizeof(T));
     }
-
-    [[nodiscard]] constexpr Int<uint8_t> size() const
+    [[nodiscard]] static constexpr Int<uint8_t> size()
     {
-        return static_cast<Int<uint8_t>>(sizeof(*this));
+        return static_cast<Int<uint8_t>>(sizeof(Int));
     }
-
     [[nodiscard]] static constexpr Int max()
     {
-        constexpr auto IS_SIZE_TYPE_MAX = true;
-        return findsRangeOfIntegerType(IS_SIZE_TYPE_MAX);
+        return Int(calculatesSizeOfType() - 1);
     }
-
     [[nodiscard]] static constexpr Int min()
     {
-        constexpr auto IS_SIZE_TYPE_MIN = false;
-        return findsRangeOfIntegerType(IS_SIZE_TYPE_MIN);
+        return Int(IS_SIGNED ? calculatesSizeOfType() * -1 : 0);
     }
-
     [[nodiscard]] static constexpr std::string getType()
     {
-        const auto i = std::ranges::find_if(ARRAY_INT_TYPES,
-            [](const std::pair<std::string, std::string>& si) -> bool
+        switch (types())
         {
-            return si.first == TYPE_VALUE;
-        });
-        if (i != ARRAY_INT_TYPES.end())
-            return i->second;
-        return std::string{};
+            case INT8: return "int8";
+            case INT16: return "int16";
+            case INT32: return "int32";
+            case INT64: return "int64";
+
+            case UINT8: return "uint8";
+            case UINT16: return "uint16";
+            case UINT32: return "uint32";
+            case UINT64: return "uint64";
+
+            default:  return std::string{};
+        }
     }
 };
 
 using int32 = Int<int32_t>;
-using int16 = Int<int16_t>;
-using int8 = Int<int8_t>;
-
-using uint32 = Int<uint32_t>;
-using uint16 = Int<uint16_t>;
-using uint8 = Int<uint8_t>;
+// using int16 = Int<int16_t>;
+// using int8 = Int<int8_t>;
+// using int64 = Int<int64_t>;
+//
+// using uint32 = Int<uint32_t>;
+// using uint16 = Int<uint16_t>;
+// using uint8 = Int<uint8_t>;
+// using uint64 = Int<uint64_t>;
 
 
 int main()
 {
-    int32 i{0};
-    int8 t{1};
-
-    std::cout << "i - " << i.size() << ' ' << i.sizeValue() << '\n';
-    std::cout << "t - " << t.size() << ' ' << t.sizeValue() << '\n';
-    std::cout << (t /= i) << '\n';
-    std::cout << (i /= 0) << '\n';
-    std::cout << (i += ' ') << '\n';
-    std::cout << i << '\n';
-
-    i = 90;
-
+    int32 io{90};
+    std::cout << io + 89;
     return 0;
 }

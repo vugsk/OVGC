@@ -1,2 +1,2 @@
 # OVGC
-OVGC - Obiectum Vexillum Genus Cpp
+OVGC - Obiectum Vexillum Genus Cpp (Object Standart Type Cpp)
