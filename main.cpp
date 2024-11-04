@@ -19,12 +19,25 @@ template<isNumber T>
 class Int
 {
 protected:
+    enum TYPES : uint8_t
+    {
+        NONE,
+        INT8,
+        INT16,
+        INT32,
+        INT64,
+        UINT8,
+        UINT16,
+        UINT32,
+        UINT64,
+    };
+
     static constexpr bool IS_SIGNED = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
 
     T _value;
 
-    static constexpr T calculatesSizeOfType()
+    [[nodiscard]] static constexpr T calculatesSizeOfType()
     {
         return static_cast<T>(pow(2, []() -> double
         {
@@ -38,32 +51,61 @@ protected:
             }
         }()));
     }
-
-    static constexpr bool isTypeInt8()
+    [[nodiscard]] static constexpr bool isTypeInt8()
     {
-        return getType() == "int8" || getType() == "uint8";
+        return types() == INT8 || types() == UINT8;
     }
 
     template<isNumber T1>
-    static constexpr Int circumcisionOfValue(const Int<T1>& val)
+    [[nodiscard]] static constexpr T circumcisionOfValue(const Int<T1>& val)
     {
         if (val > max())
-            return max();
+            return convertTypes(max());
 
         if (val < max() && val < min())
-            return min();
+            return convertTypes(min());
 
-        return static_cast<Int>(val);
+        return convertTypes(val);
     }
 
-    template<isObjectIntAndNumber T1>
-    constexpr Int& equal(const T1& other, const std::function<T1(T1)>& func)
+    template<isObjectInt T1>
+    [[nodiscard]] static constexpr T convertTypes(const T1& type)
     {
-        if (isObjectInt<T1> && *this == other)
-            return *this;
+        return static_cast<T>(type);
+    }
 
-        _value = func(other);
-        return *this;
+    template<isNumber T1>
+    [[nodiscard]] static constexpr std::istream& ui(std::istream& os, Int<T1>& other)
+    {
+        int64_t i;
+        os >> i;
+        other = static_cast<T1>(circumcisionOfValue(Int(i)));
+        return os;
+    }
+
+    [[nodiscard]] static constexpr TYPES types()
+    {
+        #if __GNUC__
+        switch (TYPE_VALUE[0])
+        {
+            // signed int
+            case 'a': return INT8;
+            case 's': return INT16;
+            case 'i': return INT32;
+            case 'x': return INT64;
+
+            // unsigned int
+            case 'h': return UINT8;
+            case 't': return UINT16;
+            case 'j': return UINT32;
+            case 'y': return UINT64;
+
+            default:  return NONE;
+        }
+        #elif _MSV_VER
+        #elif _clang_
+        #elif __MINGW64__
+        #endif
     }
 
 public:
@@ -80,88 +122,137 @@ public:
     template<isNumber T1>
     explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
 
+    template<isNumber T1>
+    explicit operator T1() const
+    {
+        return isTypeInt8() ? static_cast<int16_t>(_value) : static_cast<T1>(_value);
+    }
+
     template<isObjectIntAndNumber T1>
     constexpr Int& operator=(const T1& other)
     {
-        return equal<T1>(other, [](const T1& t) -> T1
-        {
-            return isObjectInt<T1> ? static_cast<T1>(t) : t;
-        });
+        _value = isObjectInt<T1> ? static_cast<T1>(other) : other;
+        return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator=(T1&& other) noexcept
     {
-        return equal<T1>(other, [](const T1& t) -> T1
-        {
-            return std::move(isObjectInt<T1> ? static_cast<T1>(t) : t);
-        });
+        _value = std::move(isObjectInt<T1> ? static_cast<T1>(other) : other);
+        return *this;
     }
 
-    Int& operator++()
+    constexpr Int& operator++()
     {
         ++_value;
         return *this;
     }
-
-    Int operator++(int)
+    constexpr Int operator++(int)
     {
         Int temp(*this);
         ++_value;
         return temp;
     }
-
-    Int& operator--()
+    constexpr Int& operator--()
     {
         --_value;
         return *this;
     }
-
-    Int operator--(int)
+    constexpr Int operator--(int)
     {
         Int temp = *this;
         --_value;
         return temp;
     }
 
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator>(const T1& val) const
+    {
+        return _value > convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator<(const T1& val) const
+    {
+        return _value < convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator>=(const T1& val) const
+    {
+        return _value >= convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr bool operator<=(const T1& val) const
+    {
+        return _value <= convertTypes(val);
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator+(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator-(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator/(const T1& val) const
+    {
+        return static_cast<int8_t>(val)
+            ? Int(circumcisionOfValue(Int<int64_t>(_value / convertTypes(val))))
+            : Int{};
+    }
+
+    template<isObjectIntAndNumber T1>
+    [[nodiscard]] constexpr Int operator*(const T1& val) const
+    {
+        return Int(circumcisionOfValue(Int<int64_t>(_value * convertTypes(val))));
+    }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator+=(const T1& val)
     {
-        _value = circumcisionOfValue(Int<int32_t>(_value + val));
+        _value = circumcisionOfValue(Int<int64_t>(_value + convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator-=(const T1& val)
     {
-        _value = circumcisionOfValue(Int<int32_t>(_value - val));
+        _value = circumcisionOfValue(Int<int64_t>(_value - convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator*=(const T1& val)
     {
-        _value = circumcisionOfValue(Int<int32_t>(_value * val));
+        _value = circumcisionOfValue(Int<int64_t>(_value * convertTypes(val)));
         return *this;
     }
 
     template<isObjectIntAndNumber T1>
     constexpr Int& operator/=(const T1& val)
     {
-        _value = static_cast<int32_t>(val) == 0 ? static_cast<Int>(val)
-                                                : circumcisionOfValue(Int<int32_t>(_value / val));
+        _value = static_cast<int8_t>(val) ? circumcisionOfValue(Int<int64_t>(_value / val))
+                                          : convertTypes(val);
         return *this;
     }
 
     friend constexpr std::ostream& operator<<(std::ostream& os, const Int& other)
     {
-        return os << (isTypeInt8() ? static_cast<int16_t>(other._value) : other._value);
+        return os << (isTypeInt8() ? static_cast<int16_t>(convertTypes(other)) : convertTypes(other));
     }
 
-    operator T() const
+    friend constexpr std::istream& operator>>(std::istream& os, Int& other)
     {
-        return isTypeInt8() ? static_cast<int16_t>(_value) : _value;
+        return isTypeInt8() ? ui(os, reinterpret_cast<Int<int16_t>&>(other))
+                            : ui(os, other);
     }
 
     [[nodiscard]] std::string convertToString() const
@@ -169,62 +260,60 @@ public:
         return std::to_string(_value);
     }
 
-    [[nodiscard]] static constexpr Int<uint64_t> convertToUnsignedInt(const std::string& str)
+    template<isObjectInt T1>
+    [[nodiscard]] static constexpr T1 convertToInt(const std::string& str)
     {
         if (str.empty())
-            return Int<uint64_t>{};
-        return static_cast<Int<uint64_t>>(std::stoull(str));
+            return T1{};
+
+        switch (types())
+        {
+            case INT8:
+            case INT16:
+            case INT32: return T1(std::stoi(str));
+            case INT64: return T1(std::stoll(str));
+            case UINT8:
+            case UINT16:
+            case UINT32: return T1(std::stoul(str));
+            case UINT64: return T1(std::stoull(str));
+            default:     return T1{};
+        }
     }
 
-    [[nodiscard]] static constexpr Int<int64_t> convertToSignedInt(const std::string& str)
+    [[nodiscard]] static constexpr Int<uint8_t> sizeValue()
     {
-        if (str.empty())
-            return Int<int64_t>{};
-        return static_cast<Int<int64_t>>(std::stoll(str));
+        return static_cast<Int<uint8_t>>(sizeof(T));
     }
-
-    [[nodiscard]] constexpr Int<uint8_t> sizeValue() const
+    [[nodiscard]] static constexpr Int<uint8_t> size()
     {
-        return static_cast<Int<uint8_t>>(sizeof(_value));
+        return static_cast<Int<uint8_t>>(sizeof(Int));
     }
-
-    [[nodiscard]] constexpr Int<uint8_t> size() const
-    {
-        return static_cast<Int<uint8_t>>(sizeof(*this));
-    }
-
     [[nodiscard]] static constexpr Int max()
     {
         return Int(calculatesSizeOfType() - 1);
     }
-
     [[nodiscard]] static constexpr Int min()
     {
-
         return Int(IS_SIGNED ? calculatesSizeOfType() * -1 : 0);
     }
-
     [[nodiscard]] static constexpr std::string getType()
     {
-        #if __GNUC__
-            switch (TYPE_VALUE[0])
-            {
-                case 'a': return "int8";
-                case 's': return "int16";
-                case 'i': return "int32";
-                case 'x': return "int64";
+        switch (types())
+        {
+            // signed int
+            case INT8: return "int8";
+            case INT16: return "int16";
+            case INT32: return "int32";
+            case INT64: return "int64";
 
-                case 'h': return "uint8";
-                case 't': return "uint16";
-                case 'j': return "uint32";
-                case 'y': return "uint64";
+            // unsigned int
+            case UINT8: return "uint8";
+            case UINT16: return "uint16";
+            case UINT32: return "uint32";
+            case UINT64: return "uint64";
 
-                default:  return std::string{};
-            }
-        #elif _MSV_VER
-        #elif _clang_
-        #elif __MINGW64__
-        #endif
+            default:  return std::string{};
+        }
     }
 };
 
@@ -241,7 +330,6 @@ using uint64 = Int<uint64_t>;
 
 int main()
 {
-    int8 op(89);
-    std::cout << op << '\n';
+
     return 0;
 }
