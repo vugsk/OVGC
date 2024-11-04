@@ -18,7 +18,7 @@ concept isObjectIntAndNumber = isObjectInt<T> || isNumber<T>;
 template<isNumber T>
 class Int
 {
-protected:
+private:
     enum TYPES : uint8_t
     {
         NONE,
@@ -37,11 +37,12 @@ protected:
 
     T _value;
 
+
     [[nodiscard]] static constexpr T calculatesSizeOfType()
     {
         return static_cast<T>(pow(2, []() -> double
         {
-            switch (sizeof(_value))
+            switch (sizeof(T))
             {
                 case 1:  return !IS_SIGNED ? 8  : 7;
                 case 2:  return !IS_SIGNED ? 16 : 15;
@@ -51,10 +52,12 @@ protected:
             }
         }()));
     }
-    [[nodiscard]] static constexpr bool isTypeInt8()
+    // compilation
+    [[nodiscard]] static consteval bool isTypeInt8()
     {
         return types() == INT8 || types() == UINT8;
     }
+
 
     template<isNumber T1>
     [[nodiscard]] static constexpr T circumcisionOfValue(const Int<T1>& val)
@@ -74,8 +77,9 @@ protected:
         return static_cast<T>(type);
     }
 
+    // compilation
     template<isNumber T1>
-    [[nodiscard]] static constexpr std::istream& ui(std::istream& os, Int<T1>& other)
+    [[nodiscard]] static consteval std::istream& inputFromStream(std::istream& os, Int<T1>& other)
     {
         int64_t i;
         os >> i;
@@ -83,29 +87,27 @@ protected:
         return os;
     }
 
-    [[nodiscard]] static constexpr TYPES types()
+    // compilation
+    [[nodiscard]] static consteval TYPES types()
     {
-        #if __GNUC__
-        switch (TYPE_VALUE[0])
-        {
-            // signed int
-            case 'a': return INT8;
-            case 's': return INT16;
-            case 'i': return INT32;
-            case 'x': return INT64;
-
-            // unsigned int
-            case 'h': return UINT8;
-            case 't': return UINT16;
-            case 'j': return UINT32;
-            case 'y': return UINT64;
-
-            default:  return NONE;
-        }
-        #elif _MSV_VER
-        #elif _clang_
-        #elif __MINGW64__
-        #endif
+        if constexpr (std::is_same_v<std::decay_t<T>, int8_t>)
+            return INT8;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int16_t>)
+            return INT16;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int32_t>)
+            return INT32;
+        else if constexpr (std::is_same_v<std::decay_t<T>, int64_t>)
+            return INT64;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint8_t>)
+            return UINT8;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint16_t>)
+            return UINT16;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint32_t>)
+            return UINT32;
+        else if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>)
+            return UINT64;
+        else
+            return NONE;
     }
 
 public:
@@ -251,7 +253,7 @@ public:
 
     friend constexpr std::istream& operator>>(std::istream& os, Int& other)
     {
-        return isTypeInt8() ? ui(os, reinterpret_cast<Int<int16_t>&>(other))
+        return isTypeInt8() ? inputFromStream(os, reinterpret_cast<Int<int16_t>&>(other))
                             : ui(os, other);
     }
 
@@ -300,13 +302,11 @@ public:
     {
         switch (types())
         {
-            // signed int
             case INT8: return "int8";
             case INT16: return "int16";
             case INT32: return "int32";
             case INT64: return "int64";
 
-            // unsigned int
             case UINT8: return "uint8";
             case UINT16: return "uint16";
             case UINT32: return "uint32";
@@ -318,18 +318,19 @@ public:
 };
 
 using int32 = Int<int32_t>;
-using int16 = Int<int16_t>;
-using int8 = Int<int8_t>;
-using int64 = Int<int64_t>;
-
-using uint32 = Int<uint32_t>;
-using uint16 = Int<uint16_t>;
-using uint8 = Int<uint8_t>;
-using uint64 = Int<uint64_t>;
+// using int16 = Int<int16_t>;
+// using int8 = Int<int8_t>;
+// using int64 = Int<int64_t>;
+//
+// using uint32 = Int<uint32_t>;
+// using uint16 = Int<uint16_t>;
+// using uint8 = Int<uint8_t>;
+// using uint64 = Int<uint64_t>;
 
 
 int main()
 {
-
+    int32 io{90};
+    std::cout << io + 89;
     return 0;
 }
