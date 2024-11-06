@@ -1,21 +1,23 @@
+//
+// Created by ganch on 04.11.2024.
+//
+
+#ifndef INT_HPP
+#define INT_HPP
 
 #include <algorithm>
 #include <cmath>
-#include <concepts>
 #include <cstdint>
 #include <functional>
-#include <iostream>
+#include <istream>
+#include <memory>
 
-template<typename T>
-concept isNumber = std::integral<T>;
+#include "Common.hpp"
 
-template<typename T>
-concept isObjectInt = std::is_object_v<T> || T::getType();
+namespace types
+{
 
-template<typename T>
-concept isObjectIntAndNumber = isObjectInt<T> || isNumber<T>;
-
-template<isNumber T>
+template<concepts::isNumber T>
 class Int
 {
 private:
@@ -59,7 +61,7 @@ private:
     }
 
 
-    template<isNumber T1>
+    template<concepts::isNumber T1>
     [[nodiscard]] static constexpr T circumcisionOfValue(const Int<T1>& val)
     {
         if (val > max())
@@ -71,14 +73,14 @@ private:
         return convertTypes(val);
     }
 
-    template<isObjectInt T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] static constexpr T convertTypes(const T1& type)
     {
         return static_cast<T>(type);
     }
 
     // compilation
-    template<isNumber T1>
+    template<concepts::isNumber T1>
     [[nodiscard]] static consteval std::istream& inputFromStream(std::istream& os, Int<T1>& other)
     {
         int64_t i;
@@ -118,29 +120,29 @@ public:
     Int(Int&& other) noexcept : _value{std::move(other._value)} {}
     ~Int() = default;
 
-    template<isNumber T1>
+    template<concepts::isNumber T1>
     explicit Int(const Int<T1>& other) : _value(static_cast<T1>(other)) {}
 
-    template<isNumber T1>
+    template<concepts::isNumber T1>
     explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
 
-    template<isNumber T1>
+    template<concepts::isNumber T1>
     explicit operator T1() const
     {
         return isTypeInt8() ? static_cast<int16_t>(_value) : static_cast<T1>(_value);
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator=(const T1& other)
     {
-        _value = isObjectInt<T1> ? static_cast<T1>(other) : other;
+        _value = concepts::isObjectInt<T1> ? static_cast<T1>(other) : other;
         return *this;
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator=(T1&& other) noexcept
     {
-        _value = std::move(isObjectInt<T1> ? static_cast<T1>(other) : other);
+        _value = std::move(concepts::isObjectInt<T1> ? static_cast<T1>(other) : other);
         return *this;
     }
 
@@ -167,43 +169,43 @@ public:
         return temp;
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr bool operator>(const T1& val) const
     {
         return _value > convertTypes(val);
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr bool operator<(const T1& val) const
     {
         return _value < convertTypes(val);
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr bool operator>=(const T1& val) const
     {
         return _value >= convertTypes(val);
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr bool operator<=(const T1& val) const
     {
         return _value <= convertTypes(val);
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr Int operator+(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr Int operator-(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr Int operator/(const T1& val) const
     {
         return static_cast<int8_t>(val)
@@ -211,34 +213,34 @@ public:
             : Int{};
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     [[nodiscard]] constexpr Int operator*(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value * convertTypes(val))));
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator+=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value + convertTypes(val)));
         return *this;
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator-=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value - convertTypes(val)));
         return *this;
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator*=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value * convertTypes(val)));
         return *this;
     }
 
-    template<isObjectIntAndNumber T1>
+    template<concepts::isObjectIntAndNumber T1>
     constexpr Int& operator/=(const T1& val)
     {
         _value = static_cast<int8_t>(val) ? circumcisionOfValue(Int<int64_t>(_value / val))
@@ -250,7 +252,6 @@ public:
     {
         return os << (isTypeInt8() ? static_cast<int16_t>(convertTypes(other)) : convertTypes(other));
     }
-
     friend constexpr std::istream& operator>>(std::istream& os, Int& other)
     {
         return isTypeInt8() ? inputFromStream(os, reinterpret_cast<Int<int16_t>&>(other))
@@ -262,7 +263,7 @@ public:
         return std::to_string(_value);
     }
 
-    template<isObjectInt T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] static constexpr T1 convertToInt(const std::string& str)
     {
         if (str.empty())
@@ -317,20 +318,6 @@ public:
     }
 };
 
-using int32 = Int<int32_t>;
-// using int16 = Int<int16_t>;
-// using int8 = Int<int8_t>;
-// using int64 = Int<int64_t>;
-//
-// using uint32 = Int<uint32_t>;
-// using uint16 = Int<uint16_t>;
-// using uint8 = Int<uint8_t>;
-// using uint64 = Int<uint64_t>;
+} // types
 
-
-int main()
-{
-    int32 io{90};
-    std::cout << io + 89;
-    return 0;
-}
+#endif //INT_HPP
