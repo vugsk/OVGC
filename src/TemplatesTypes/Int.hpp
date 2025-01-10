@@ -17,6 +17,7 @@
 namespace types
 {
 
+// #define DEV
 template<concepts::isNumber T>
 class Int
 {
@@ -113,9 +114,9 @@ private:
     }
 
 public:
-    Int() : _value(0) {}
-    explicit Int(const T& val) : _value(val) {}
-    explicit Int(T&& val) : _value(val) {}
+    constexpr Int() : _value(0) {}
+    constexpr explicit Int(const T& val) : _value(val) {}
+    constexpr explicit Int(T&& val) : _value(val) {}
     Int(const Int& other) = default;
     Int(Int&& other) noexcept : _value{std::move(other._value)} {}
     ~Int() = default;
