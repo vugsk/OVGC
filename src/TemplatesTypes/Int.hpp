@@ -254,7 +254,7 @@ public:
     }
     friend constexpr std::istream& operator>>(std::istream& os, Int& other)
     {
-        return isTypeInt8() ? inputFromStream(os, reinterpret_cast<Int<int16_t>&>(other))
+        return isTypeInt8() ? inputFromStream(os, static_cast<Int<int16_t>&>(other))
                             : ui(os, other);
     }
 
