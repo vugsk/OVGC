@@ -5,7 +5,6 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-// #include "TemplatesTypes/Char.hpp"
 #include "TemplatesTypes/Float.hpp"
 #include "TemplatesTypes/Int.hpp"
 
@@ -22,9 +21,5 @@ using uint64 = types::Int<uint64_t>;
 using float32 = types::Float<float>;
 using float64 = types::Float<double>;
 using float128 = types::Float<long double>;
-
-// using char8 = types::Char<char8_t>;
-// using char16 = types::Char<char16_t>;
-// using char32 = types::Char<char32_t>;
 
 #endif //TYPES_HPP

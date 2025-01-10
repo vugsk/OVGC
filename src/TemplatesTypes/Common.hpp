@@ -36,11 +36,4 @@ concept isObjectIntAndNumber = isObjectInt<T> || isNumber<T>;
 
 }
 
-namespace utils
-{
-
-
-
-} // utils
-
 #endif //COMMON_HPP
