@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <float.h>
 #include <ostream>
 
 #include "Common.hpp"
@@ -33,8 +32,8 @@ public:
     template<concepts::isObjectIntAndNatural T1>
     explicit Float(T1&& num) : _value(std::move(static_cast<int32_t>(num))) {}
 
-    template<concepts::isNatural T1>
-    explicit operator T1() const
+    // template<concepts::isNatural T1>
+    explicit operator T() const
     {
         return _value;
     }
