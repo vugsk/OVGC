@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iostream>
 #include <ostream>
 
 #include "Common.hpp"
@@ -14,26 +15,48 @@
 namespace types {
 
 template<concepts::isFloat T>
-class Float {
+class Float
+{
 private:
     T _value;
 
     template<concepts::isNatural T1>
-    static constexpr T convertTypes(const Float<T1>& type)
+    static constexpr T convertTypes(const T1& type)
     {
         return static_cast<T>(type);
     }
 
+    // [[nodiscard]] static constexpr Float circumcisionOfValue(const Float& val)
+    // {
+    //     if (val > max())
+    //         return static_cast<Float>(max());
+    //
+    //     if (val < max() && val < min())
+    //         return static_cast<Float>(min());
+    //
+    //     return static_cast<Float>(val);
+    // }
+
 public:
-    Float() : _value(0) {}
-    template<concepts::isObjectIntAndNatural T1>
-    explicit Float(const T1& num) : _value(static_cast<int32_t>(num)) {}
+    constexpr Float() : _value(0) {}
+
+    template<concepts::isFloat T1>
+    explicit Float(const T1& fl) : _value(fl) {}
+
+    template<concepts::isFloat T1>
+    constexpr explicit Float(T1&& fl)
+        : _value(std::forward<T1>(fl)) {}
 
     template<concepts::isObjectIntAndNatural T1>
-    explicit Float(T1&& num) : _value(std::move(static_cast<int32_t>(num))) {}
+    constexpr explicit Float(const T1& num)
+        : _value(static_cast<int64_t>(num)) {}
 
-    // template<concepts::isNatural T1>
-    explicit operator T() const
+    template<concepts::isObjectIntAndNatural T1>
+    constexpr explicit Float(T1&& num)
+        : _value(std::move(static_cast<int64_t>(num))) {}
+
+    template<concepts::isNatural T1>
+    explicit operator T1() const
     {
         return _value;
     }
@@ -47,27 +70,51 @@ public:
         return os >> other._value;
     }
 
-    // template<concepts::isObjectIntAndNatural T1>
-    // [[nodiscard]] constexpr Float operator+(const T1& val) const
+    static constexpr Float max()
+    {
+        return static_cast<Float>(std::numeric_limits<T>::max());
+    }
+    static constexpr Float min()
+    {
+        return static_cast<Float>(std::numeric_limits<T>::min());
+    }
+
+    // write concept for floats types
+    // template<typename T1>
+    // constexpr Float operator+(const T1& other) const
     // {
-    //     return Float(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
-    // }
-    //
-    // template<concepts::isObjectIntAndNatural T1>
-    // [[nodiscard]] constexpr Float operator-(const T1& val) const
-    // {
-    //     return Float(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
-    // }
-    //
-    // template<concepts::isObjectIntAndNatural T1>
-    // [[nodiscard]] constexpr Float operator/(const T1& val) const
-    // {
-    //     return static_cast<float>(val)
-    //         ? Float(circumcisionOfValue(Int<int64_t>(_value / convertTypes(val))))
-    //         : Float{};
+    //     return static_cast<Float>(_value + static_cast<T>(other));
     // }
 
+    template<typename T1>
+    constexpr bool operator>(const T1& other) const
+    {
+        return _value > static_cast<T>(other);
+    }
 
+    template<typename T1>
+    constexpr bool operator>=(const T1& other) const
+    {
+        return _value >= static_cast<T>(other);
+    }
+
+    template<typename T1>
+    constexpr bool operator<(const T1& other) const
+    {
+        return _value < static_cast<T>(other);
+    }
+
+    template<typename T1>
+    constexpr bool operator<=(const T1& other) const
+    {
+        return _value <= static_cast<T>(other);
+    }
+
+    template<typename T1>
+    constexpr bool operator==(const T1& other) const
+    {
+        return _value == static_cast<T>(other);
+    }
 
 };
 
