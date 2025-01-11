@@ -11,4 +11,5 @@ add_executable(ObjectStandartTypeCpp src/main.cpp
     src/TemplatesTypes/Common.hpp
     src/TemplatesTypes/Float.cpp
     src/TemplatesTypes/Float.hpp
+    src/TemplatesTypes/Bool.hpp
 )
