@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <bitset>
 
-#include "Int.hpp"
-
 
 namespace types
 {
@@ -23,7 +21,7 @@ private:
     template<typename T>
     static constexpr std::bitset<1> ui(const T& value)
     {
-        return std::bitset<1>(value > 1 ? 1 : 0);
+        return std::bitset<1>(value >= 1 ? 1 : 0);
     }
 
 public:
@@ -62,7 +60,7 @@ public:
     template<typename T>
     explicit operator T() const
     {
-        return static_cast<T>(_value);
+        return static_cast<T>(_value.to_ulong());
     }
 
     friend constexpr std::ostream& operator<<(std::ostream& os, const Bool& other)

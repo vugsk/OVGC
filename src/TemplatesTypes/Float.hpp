@@ -7,9 +7,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
-#include <ostream>
 
+#include "Bool.hpp"
 #include "Common.hpp"
 
 namespace types {
@@ -26,16 +25,16 @@ private:
         return static_cast<T>(type);
     }
 
-    // [[nodiscard]] static constexpr Float circumcisionOfValue(const Float& val)
-    // {
-    //     if (val > max())
-    //         return static_cast<Float>(max());
-    //
-    //     if (val < max() && val < min())
-    //         return static_cast<Float>(min());
-    //
-    //     return static_cast<Float>(val);
-    // }
+    [[nodiscard]] static constexpr Float circumcisionOfValue(const Float& val)
+    {
+        if (val > max())
+            return static_cast<Float>(max());
+
+        if (val < max() && val < min())
+            return static_cast<Float>(min());
+
+        return static_cast<Float>(val);
+    }
 
 public:
     constexpr Float() : _value(0) {}
@@ -70,50 +69,76 @@ public:
         return os >> other._value;
     }
 
-    static constexpr Float max()
+    [[nodiscard]] static constexpr Float max()
     {
         return static_cast<Float>(std::numeric_limits<T>::max());
     }
-    static constexpr Float min()
+    [[nodiscard]] static constexpr Float min()
     {
         return static_cast<Float>(std::numeric_limits<T>::min());
     }
 
     // write concept for floats types
-    // template<typename T1>
-    // constexpr Float operator+(const T1& other) const
-    // {
-    //     return static_cast<Float>(_value + static_cast<T>(other));
-    // }
-
     template<typename T1>
-    constexpr bool operator>(const T1& other) const
+    [[nodiscard]] constexpr Bool operator>(const T1& other) const
     {
-        return _value > static_cast<T>(other);
+        return static_cast<Bool>(_value > static_cast<T>(other));
     }
 
     template<typename T1>
-    constexpr bool operator>=(const T1& other) const
+    [[nodiscard]] constexpr Bool operator>=(const T1& other) const
     {
-        return _value >= static_cast<T>(other);
+        return static_cast<Bool>(_value >= static_cast<T>(other));
     }
 
     template<typename T1>
-    constexpr bool operator<(const T1& other) const
+    [[nodiscard]] constexpr Bool operator<(const T1& other) const
     {
-        return _value < static_cast<T>(other);
+        return static_cast<Bool>(_value < static_cast<T>(other));
     }
 
     template<typename T1>
-    constexpr bool operator<=(const T1& other) const
+    [[nodiscard]] constexpr Bool operator<=(const T1& other) const
     {
-        return _value <= static_cast<T>(other);
+        return static_cast<Bool>(_value <= static_cast<T>(other));
     }
 
     template<typename T1>
-    constexpr bool operator==(const T1& other) const
+    [[nodiscard]] constexpr Bool operator==(const T1& other) const
     {
-        return _value == static_cast<T>(other);
+        return static_cast<Bool>(_value == static_cast<T>(other));
+    }
+
+    template<typename T1>
+    [[nodiscard]] constexpr Bool operator!=(const T1& other) const
+    {
+        return static_cast<Bool>(_value != static_cast<T>(other));
+    }
+
+    template<typename T1>
+    [[nodiscard]] constexpr Float operator+(const T1& other) const
+    {
+        return circumcisionOfValue(static_cast<Float>(_value + static_cast<T>(other)));
+    }
+
+    template<typename T1>
+    [[nodiscard]] constexpr Float operator-(const T1& other) const
+    {
+        return circumcisionOfValue(static_cast<Float>(_value - static_cast<T>(other)));
+    }
+
+    template<typename T1>
+    [[nodiscard]] constexpr Float operator*(const T1& other) const
+    {
+        return circumcisionOfValue(static_cast<Float>(_value * static_cast<T>(other)));
+    }
+
+    template<typename T1>
+    [[nodiscard]] constexpr Float operator/(const T1& val) const
+    {
+        return static_cast<int8_t>(val)
+            ? circumcisionOfValue(static_cast<Float>(_value / convertTypes(val)))
+            : Float{};
     }
 
 };
