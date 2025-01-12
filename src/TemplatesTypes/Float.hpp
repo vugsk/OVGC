@@ -10,20 +10,25 @@
 
 #include "Bool.hpp"
 #include "Common.hpp"
+#include "Int.hpp"
 
-namespace types {
+
+namespace types
+{
 
 template<concepts::isFloat T>
 class Float
 {
 private:
-    T _value;
-
-    template<concepts::isNatural T1>
-    static constexpr T convertTypes(const T1& type)
+    enum TYPES : uint8_t
     {
-        return static_cast<T>(type);
-    }
+        NONE = 0,
+        FLOAT = 1,
+        DOUBLE = 2,
+        LONG_DOUBLE = 3,
+    };
+
+    T _value;
 
     [[nodiscard]] static constexpr Float circumcisionOfValue(const Float& val)
     {
@@ -36,6 +41,43 @@ private:
         return static_cast<Float>(val);
     }
 
+    [[nodiscard]] static consteval TYPES types()
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, float>)
+            return FLOAT;
+        else if constexpr (std::is_same_v<std::decay_t<T>, double>)
+            return DOUBLE;
+        else if constexpr (std::is_same_v<std::decay_t<T>, long double>)
+            return LONG_DOUBLE;
+        else
+            return NONE;
+    }
+
+    template<typename T1 = Float, typename F>
+    [[nodiscard]] static constexpr T1 opration(const T& a, const T& b, F&& func)
+    {
+        if constexpr (std::is_same_v<T1, Float>)
+            return circumcisionOfValue(func(b, a));
+        else
+            return static_cast<T>(circumcisionOfValue(func(a, b)));
+    }
+    [[nodiscard]] static consteval Float plus(const T& a, const T& b)
+    {
+        return static_cast<Float>(a + b);
+    }
+    [[nodiscard]] static consteval Float minus(const T& a, const T& b)
+    {
+        return static_cast<Float>(a - b);
+    }
+    [[nodiscard]] static consteval Float mul(const T& a, const T& b)
+    {
+        return static_cast<Float>(a * b);
+    }
+    [[nodiscard]] static consteval Float dis(const T& a, const T& b)
+    {
+        return static_cast<Float>(a / b);
+    }
+
 public:
     constexpr Float() : _value(0) {}
 
@@ -46,11 +88,11 @@ public:
     constexpr explicit Float(T1&& fl)
         : _value(std::forward<T1>(fl)) {}
 
-    template<concepts::isObjectIntAndNatural T1>
+    template<concepts::isObjectTypeOrNatural T1>
     constexpr explicit Float(const T1& num)
         : _value(static_cast<int64_t>(num)) {}
 
-    template<concepts::isObjectIntAndNatural T1>
+    template<concepts::isObjectTypeOrNatural T1>
     constexpr explicit Float(T1&& num)
         : _value(std::move(static_cast<int64_t>(num))) {}
 
@@ -69,6 +111,14 @@ public:
         return os >> other._value;
     }
 
+    [[nodiscard]] static constexpr Int<uint8_t> size()
+    {
+        return static_cast<Int<uint8_t>>(sizeof(Float));
+    }
+    [[nodiscard]] static constexpr Int<uint8_t> sizeValue()
+    {
+        return static_cast<Int<uint8_t>>(sizeof(_value));
+    }
     [[nodiscard]] static constexpr Float max()
     {
         return static_cast<Float>(std::numeric_limits<T>::max());
@@ -79,66 +129,130 @@ public:
     }
 
     // write concept for floats types
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator>(const T1& other) const
     {
         return static_cast<Bool>(_value > static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator>=(const T1& other) const
     {
         return static_cast<Bool>(_value >= static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator<(const T1& other) const
     {
         return static_cast<Bool>(_value < static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator<=(const T1& other) const
     {
         return static_cast<Bool>(_value <= static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator==(const T1& other) const
     {
         return static_cast<Bool>(_value == static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Bool operator!=(const T1& other) const
     {
         return static_cast<Bool>(_value != static_cast<T>(other));
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Float operator+(const T1& other) const
     {
-        return circumcisionOfValue(static_cast<Float>(_value + static_cast<T>(other)));
+        return opration(static_cast<T>(other), _value, plus);
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Float operator-(const T1& other) const
     {
-        return circumcisionOfValue(static_cast<Float>(_value - static_cast<T>(other)));
+        return opration(static_cast<T>(other), _value, minus);
     }
 
-    template<typename T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] constexpr Float operator*(const T1& other) const
     {
-        return circumcisionOfValue(static_cast<Float>(_value * static_cast<T>(other)));
+        return opration(static_cast<T>(other), _value, mul);
     }
 
-    template<typename T1>
-    [[nodiscard]] constexpr Float operator/(const T1& val) const
+    template<concepts::isObjectType T1>
+    [[nodiscard]] constexpr Float operator/(const T1& other) const
     {
-        return static_cast<int8_t>(val)
-            ? circumcisionOfValue(static_cast<Float>(_value / convertTypes(val)))
+        return static_cast<int8_t>(other)
+            ? opration(static_cast<T>(other), _value, dis)
             : Float{};
+    }
+
+    template<concepts::isObjectType T1>
+    constexpr Float& operator+=(const T1& other)
+    {
+        _value = opration<T>(static_cast<T>(other), _value, plus);
+        return *this;
+    }
+
+    template<concepts::isObjectType T1>
+    constexpr Float& operator-=(const T1& other)
+    {
+        _value = opration<T>(static_cast<T>(other), _value, minus);
+        return *this;
+    }
+
+    template<concepts::isObjectType T1>
+    constexpr Float& operator*=(const T1& other)
+    {
+        _value = opration<T>(static_cast<T>(other), _value, mul);
+        return *this;
+    }
+
+    template<concepts::isObjectType T1>
+    constexpr Float& operator/=(const T1& other)
+    {
+        _value = static_cast<T>(other)
+            ? opration<T>(static_cast<T>(other), _value, dis)
+            : T{};
+        return *this;
+    }
+
+    constexpr Float& operator++()
+    {
+        ++_value;
+        return *this;
+    }
+    constexpr Float operator++(int)
+    {
+        Float tmp{*this};
+        ++_value;
+        return tmp;
+    }
+    constexpr Float& operator--()
+    {
+        --_value;
+        return *this;
+    }
+    constexpr Float operator--(int)
+    {
+        Float tmp{*this};
+        --_value;
+        return tmp;
+    }
+
+    [[nodiscard]] static constexpr std::string getType()
+    {
+        switch (types())
+        {
+            case FLOAT: return "float32";
+            case DOUBLE: return "float64";
+            case LONG_DOUBLE: return "float128";
+            default:  return std::string{};
+        }
     }
 
 };

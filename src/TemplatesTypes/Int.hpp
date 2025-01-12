@@ -74,7 +74,7 @@ private:
         return convertTypes(val);
     }
 
-    template<concepts::isObjectInt T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] static constexpr T convertTypes(const T1& type)
     {
         return static_cast<T>(type);
@@ -133,17 +133,17 @@ public:
         return isTypeInt8() ? static_cast<int16_t>(_value) : static_cast<T1>(_value);
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator=(const T1& other)
     {
-        _value = concepts::isObjectInt<T1> ? static_cast<T1>(other) : other;
+        _value = concepts::isObjectType<T1> ? static_cast<T1>(other) : other;
         return *this;
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator=(T1&& other) noexcept
     {
-        _value = std::move(concepts::isObjectInt<T1> ? static_cast<T1>(other) : other);
+        _value = std::move(concepts::isObjectType<T1> ? static_cast<T1>(other) : other);
         return *this;
     }
 
@@ -170,43 +170,43 @@ public:
         return temp;
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr bool operator>(const T1& val) const
     {
         return _value > convertTypes(val);
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr bool operator<(const T1& val) const
     {
         return _value < convertTypes(val);
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr bool operator>=(const T1& val) const
     {
         return _value >= convertTypes(val);
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr bool operator<=(const T1& val) const
     {
         return _value <= convertTypes(val);
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator+(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator-(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator/(const T1& val) const
     {
         return static_cast<int8_t>(val)
@@ -214,34 +214,34 @@ public:
             : Int{};
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator*(const T1& val) const
     {
         return Int(circumcisionOfValue(Int<int64_t>(_value * convertTypes(val))));
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator+=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value + convertTypes(val)));
         return *this;
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator-=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value - convertTypes(val)));
         return *this;
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator*=(const T1& val)
     {
         _value = circumcisionOfValue(Int<int64_t>(_value * convertTypes(val)));
         return *this;
     }
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     constexpr Int& operator/=(const T1& val)
     {
         _value = static_cast<int8_t>(val) ? circumcisionOfValue(Int<int64_t>(_value / val))
@@ -264,7 +264,7 @@ public:
         return std::to_string(_value);
     }
 
-    template<concepts::isObjectInt T1>
+    template<concepts::isObjectType T1>
     [[nodiscard]] static constexpr T1 convertToInt(const std::string& str)
     {
         if (str.empty())
