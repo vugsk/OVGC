@@ -34,11 +34,10 @@ private:
         UINT64,
     };
 
-    static constexpr bool IS_SIGNED = std::is_signed_v<T>;
+    static constexpr Bool IS_SIGNED = std::is_signed_v<T>;
     static inline const std::string TYPE_VALUE = typeid(T).name();
 
     T _value;
-
 
     [[nodiscard]] static constexpr T calculatesSizeOfType()
     {
@@ -55,9 +54,9 @@ private:
         }()));
     }
     // compilation
-    [[nodiscard]] static consteval bool isTypeInt8()
+    [[nodiscard]] static consteval Bool isTypeInt8()
     {
-        return types() == INT8 || types() == UINT8;
+        return static_cast<Bool>(types() == INT8 || types() == UINT8);
     }
 
 
@@ -169,28 +168,41 @@ public:
         return temp;
     }
 
+    // doing compact methods
     template<concepts::isObjectInt T1>
-    [[nodiscard]] constexpr bool operator>(const T1& val) const
+    [[nodiscard]] constexpr Bool operator>(const T1& val) const
     {
-        return _value > convertTypes(val);
+        return static_cast<Bool>(_value > convertTypes(val));
     }
 
     template<concepts::isObjectInt T1>
-    [[nodiscard]] constexpr bool operator<(const T1& val) const
+    [[nodiscard]] constexpr Bool operator<(const T1& val) const
     {
-        return _value < convertTypes(val);
+        return static_cast<Bool>(_value < convertTypes(val));
     }
 
     template<concepts::isObjectInt T1>
-    [[nodiscard]] constexpr bool operator>=(const T1& val) const
+    [[nodiscard]] constexpr Bool operator>=(const T1& val) const
     {
-        return _value >= convertTypes(val);
+        return static_cast<Bool>(_value >= convertTypes(val));
     }
 
     template<concepts::isObjectInt T1>
-    [[nodiscard]] constexpr bool operator<=(const T1& val) const
+    [[nodiscard]] constexpr Bool operator<=(const T1& val) const
     {
-        return _value <= convertTypes(val);
+        return static_cast<Bool>(_value <= convertTypes(val));
+    }
+
+    template<concepts::isObjectInt T1>
+    [[nodiscard]] constexpr Bool operator==(const T1& val) const
+    {
+        return static_cast<Bool>(_value == convertTypes(val));
+    }
+
+    template<concepts::isObjectInt T1>
+    [[nodiscard]] constexpr Bool operator!=(const T1& val) const
+    {
+        return static_cast<Bool>(_value != convertTypes(val));
     }
 
     template<concepts::isObjectInt T1>
