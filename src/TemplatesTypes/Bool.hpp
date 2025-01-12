@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <bitset>
 
+#include "Common.hpp"
+
 
 namespace types
 {
@@ -29,11 +31,11 @@ public:
     constexpr explicit Bool(const bool value)
         : _value(static_cast<std::bitset<1>>(value)) {}
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr explicit Bool(const T& value)
         : _value(ui(value)) {}
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr explicit Bool(T&& value)
         : _value(ui(std::move(value))) {}
 
@@ -42,22 +44,21 @@ public:
     constexpr Bool(Bool&& other) noexcept
         : _value(std::move(other._value)) {}
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool& operator=(const T& other)
     {
         _value = ui(other);
         return *this;
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool& operator=(T&& other) noexcept
     {
         _value = ui(std::move(other));
-        other._value = 0;
         return *this;
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     explicit operator T() const
     {
         return static_cast<T>(_value.to_ulong());
@@ -74,37 +75,37 @@ public:
     //     return os >> other._value.to_ulong();
     // }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator==(const T& val) const
     {
         return _value == ui(val);
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator!=(const T& val) const
     {
         return _value != ui(val);
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator>(const T& val) const
     {
         return _value > ui(val);
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator<(const T& val) const
     {
         return _value < ui(val);
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator>=(const T& val) const
     {
         return _value >= ui(val);
     }
 
-    template<typename T>
+    template<concepts::isObjectTypeOrNatural T>
     constexpr Bool operator<=(const T& val) const
     {
         return _value <= ui(val);
