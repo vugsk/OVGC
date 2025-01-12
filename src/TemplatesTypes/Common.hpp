@@ -26,13 +26,16 @@ template<typename T>
 concept isNatural = isNumber<T> || isFloat<T>;
 
 template<typename T>
-concept isObjectInt = std::is_object_v<T> || T::getType();
+concept isObjectType = std::is_object_v<T> || T::getType();
 
 template<typename T>
-concept isObjectIntAndNatural = isObjectInt<T> || isNatural<T>;
+concept isObjectTypeOrNatural = isObjectType<T> || isNatural<T>;
 
 template<typename T>
-concept isObjectIntAndNumber = isObjectInt<T> || isNumber<T>;
+concept isObjectInt = isObjectType<T> || isNumber<T>;
+
+template<typename T>
+concept isObjectFloat = isObjectType<T> || isFloat<T>;
 
 }
 

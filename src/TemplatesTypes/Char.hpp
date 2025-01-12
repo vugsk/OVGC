@@ -29,10 +29,10 @@ public:
     template<concepts::isChar T1>
     explicit Char(T1&& simbol) : _value(std::forward<T1>(simbol)) {}
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     explicit Char(const T1& number) : _value(static_cast<int32_t>(number)) {}
 
-    template<concepts::isObjectIntAndNumber T1>
+    template<concepts::isObjectInt T1>
     explicit Char(T1&& number)
         : _value(std::forward<T1>(static_cast<int32_t>(number))) {}
 
