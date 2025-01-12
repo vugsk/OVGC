@@ -127,7 +127,7 @@ public:
     template<concepts::isNumber T1>
     explicit Int(Int<T1>&& other) : _value(static_cast<T1>(std::move(other))) {}
 
-    template<concepts::isNumber T1>
+    template<concepts::isNatural T1>
     explicit operator T1() const
     {
         return isTypeInt8() ? static_cast<int16_t>(_value) : static_cast<T1>(_value);
