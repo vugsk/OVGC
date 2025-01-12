@@ -5,14 +5,17 @@
 
 int main()
 {
-    constexpr int32 i32{32};
+    setlocale(LC_ALL, "");
 
-    float32 f32{90};
-    float64 f64{i32};
-    float128 f128{8.8};
+    static constexpr int32 i32{89};
+    static constexpr float32 f32{90};
 
-    f32 /= i32;
-    std::cout << f32 + f64 << std::endl;
+    char8 c8(i32);
+    char16 c16(f32);
+    char32 c32(L'р');
+    char16 ch16(L'л');
+    c8 = ch16;
+    std::wcout << ch16 << c32 << std::endl;
 
     // std::cout << static_cast<long double>(pow(2, 32*16));
 

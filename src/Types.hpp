@@ -6,6 +6,7 @@
 #define TYPES_HPP
 
 #include "TemplatesTypes/Bool.hpp"
+#include "TemplatesTypes/Char.hpp"
 #include "TemplatesTypes/Float.hpp"
 #include "TemplatesTypes/Int.hpp"
 
@@ -24,5 +25,9 @@ using float64 = types::Float<double>;
 using float128 = types::Float<long double>;
 
 using bool1 = types::Bool;
+
+using char8 = types::Char<char8_t>;
+using char16 = types::Char<char16_t>;
+using char32 = types::Char<char32_t>;
 
 #endif //TYPES_HPP

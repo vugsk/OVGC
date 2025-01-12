@@ -17,7 +17,6 @@
 namespace types
 {
 
-// #define DEV
 template<concepts::isNumber T>
 class Int
 {

@@ -37,6 +37,12 @@ concept isObjectInt = isObjectType<T> || isNumber<T>;
 template<typename T>
 concept isObjectFloat = isObjectType<T> || isFloat<T>;
 
+template<typename T>
+concept isObjectChar = isObjectType<T> || isChar<T>;
+
+template<typename T>
+concept isObjectTypes = isObjectInt<T> || isObjectFloat<T> || isObjectChar<T>;
+
 }
 
 #endif //COMMON_HPP
