@@ -1,15 +1,21 @@
 
 #include <iostream>
 
+#include "BaseFunctionsObjects.hpp"
 #include "Types.hpp"
+
 
 int main()
 {
     setlocale(LC_ALL, "");
 
-    int16 i16;
+    int32 i16{90};
+    float32 i8{0};
+    char8 ch{'A'};
+    bool1 bl{true};
 
-    std::cout << i16 << std::endl;
+
+    print(L"{} {} {} {}", i16, i8, ch, bl);
 
     return 0;
 }
