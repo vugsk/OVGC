@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "Bool.hpp"
 #include "Common.hpp"
 
 namespace types
@@ -76,7 +77,7 @@ public:
 
     friend constexpr std::wostream& operator<<(std::wostream& os, const Char& other)
     {
-        return os << static_cast<wchar_t>(other._value);
+        return os << static_cast<char>(other._value);
     }
     friend constexpr std::wistream& operator>>(std::wistream& os, Char& other)
     {
@@ -125,6 +126,9 @@ public:
     template<concepts::isObjectTypes T1>
     constexpr Char& operator=(const T1& other)
     {
+        if constexpr (std::is_same_v<T1, Char> && this == &other)
+            return *this;
+
         _value = static_cast<T>(other);
         return *this;
     }

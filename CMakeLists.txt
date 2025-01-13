@@ -10,4 +10,8 @@ add_executable(ObjectStandartTypeCpp src/main.cpp
     src/TemplatesTypes/Common.hpp
     src/TemplatesTypes/Float.hpp
     src/TemplatesTypes/Bool.hpp
+    src/TemplatesTypes/String.hpp
+    src/BaseFunctions/Print.hpp
+    src/BaseFunctionsObjects.hpp
+    src/CustomFunctionsFromStandartLibrary/CustomFormat.hpp
 )

@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "Common.hpp"
+#include "Bool.hpp"
 
 namespace types
 {
@@ -270,6 +271,16 @@ public:
                             : ui(os, other);
     }
 
+    // friend constexpr std::wostream& operator<<(std::wostream& os, const Int& other)
+    // {
+    //     return os << (isTypeInt8() ? static_cast<int16_t>(convertTypes(other)) : convertTypes(other));
+    // }
+    // friend constexpr std::wistream& operator>>(std::wistream& os, Int& other)
+    // {
+    //     return isTypeInt8() ? inputFromStream(os, static_cast<Int<int16_t>&>(other))
+    //                         : ui(os, other);
+    // }
+
     [[nodiscard]] std::string convertToString() const
     {
         return std::to_string(_value);
@@ -328,6 +339,7 @@ public:
             default:  return std::string{};
         }
     }
+
 };
 
 } // types
