@@ -8,6 +8,19 @@ int main()
 {
     setlocale(LC_ALL, "");
 
+    static constexpr auto FUNC = []<typename T, typename T1>(
+        const types::Int<T>& val, T1 val2)
+    {
+        return val * val2;
+    };
+
+    std::cout << (int32{25} * 6) << '\n';
+
+    int32 i32{25};
+    int32 i16{6};
+
+    std::cout << FUNC(i32, static_cast<int32_t>(6)) << '\n';
+
     //types::Pointer<int16> int_ptr{int32{45}};
     //std::cout << *int_ptr << std::endl;
 

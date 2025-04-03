@@ -30,7 +30,13 @@ if (${TEST_BUILD})
     add_subdirectory(Tests)
 else()
     message("No, tests")
-    add_executable(${NAME_PROJECT} src/main.cpp)
+    
+    option(BUILD_EXP "" OFF)
+    if(${BUILD_EXP})
+        # ???
+    else()
+        add_executable(${NAME_PROJECT} src/main.cpp)
+    endif()
     target_include_directories(${NAME_PROJECT} PUBLIC ${HEADER_FILES})
 endif()
 
