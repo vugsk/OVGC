@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <functional>
 #include <istream>
 
 #include "Common.hpp"
@@ -185,7 +184,7 @@ public:
     template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Bool operator==(const T1& val) const
     {
-        return static_cast<Bool>(_value == convertTypes(val));
+        return static_cast<Bool>(_value == static_cast<T>(val)); // fix
     }
 
     template<concepts::isObjectInt T1>
@@ -197,27 +196,34 @@ public:
     template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator+(const T1& val) const
     {
-        return Int(circumcisionOfValue(Int<int64_t>(_value + convertTypes(val))));
+        return Int(circumcisionOfValue(Int<__int128_t>(
+            static_cast<__int128_t>(_value) + static_cast<__int128_t>(val))));
     }
 
     template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator-(const T1& val) const
     {
-        return Int(circumcisionOfValue(Int<int64_t>(_value - convertTypes(val))));
+        return Int(circumcisionOfValue(Int<__int128_t>(
+            static_cast<__int128_t>(_value) - static_cast<__int128_t>(val))));
     }
 
     template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator/(const T1& val) const
     {
         return static_cast<int8_t>(val)
-            ? Int(circumcisionOfValue(Int<int64_t>(_value / convertTypes(val))))
+            ? Int(circumcisionOfValue(Int<__int128_t>(
+                static_cast<__int128_t>(_value) /
+                    static_cast<__int128_t>(val))))
             : Int{};
     }
 
+    // fix
     template<concepts::isObjectInt T1>
     [[nodiscard]] constexpr Int operator*(const T1& val) const
     {
-        return Int(circumcisionOfValue(Int<int64_t>(_value * convertTypes(val))));
+        return Int(circumcisionOfValue(Int<__int128_t>(
+                static_cast<__int128_t>(_value) *
+                    static_cast<__int128_t>(val))));
     }
 
     template<concepts::isObjectInt T1>
