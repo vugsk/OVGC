@@ -240,7 +240,7 @@ TEST(TestTemplateIntType, TestOperatorDis)
 
 }
 
-// i32 -> int8 -> 127 - ???
+// i32 -> int8 -> 127 – ???
 TEST(TestTemplateIntType, TestOperatorMul)
 {
     static constexpr auto FUNC = []<typename T, typename T1>(

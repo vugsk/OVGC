@@ -8,9 +8,12 @@
 #include "CustomFunctionsFromStandartLibrary/CustomFormat.hpp"
 
 #include "BaseFunctions/Print.hpp"
+#include "BaseFunctions/FunctionConvertTypes.hpp"
 
 inline constexpr base_functions::Print print{};
 
 // using print = base_functions::Print;
+
+
 
 #endif //BASEFUNCTIONSOBJECTS_HPP

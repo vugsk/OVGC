@@ -10,6 +10,12 @@ FetchContent_Declare(
     URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    message("OS: Windows")
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
 option(TESTS_TEMPLATES_TYPES "" OFF)
 if (${TESTS_TEMPLATES_TYPES})
     add_subdirectory(TestsTemplatesTypes)

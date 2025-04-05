@@ -5,12 +5,12 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-#include "TemplatesTypes/Bool.hpp"
-#include "TemplatesTypes/Char.hpp"
-#include "TemplatesTypes/Float.hpp"
+// #include "TemplatesTypes/Bool.hpp"
+// #include "TemplatesTypes/Char.hpp"
+// #include "TemplatesTypes/Float.hpp"
 #include "TemplatesTypes/Int.hpp"
 
-#include "TemplatesTypes/Pointer.hpp"
+// #include "TemplatesTypes/Pointer.hpp"
 
 
 using int32 = types::Int<int32_t>;
@@ -23,15 +23,15 @@ using uint16 = types::Int<uint16_t>;
 using uint8 = types::Int<uint8_t>;
 using uint64 = types::Int<uint64_t>;
 
-using float32 = types::Float<float>;
-using float64 = types::Float<double>;
-using float128 = types::Float<long double>;
-
-using bool1 = types::Bool;
-
-using char8 = types::Char<char8_t>;
-using char16 = types::Char<char16_t>;
-using char32 = types::Char<char32_t>;
+// using float32 = types::Float<float>;
+// using float64 = types::Float<double>;
+// using float128 = types::Float<long double>;
+//
+// using bool1 = types::Bool;
+//
+// using char8 = types::Char<char8_t>;
+// using char16 = types::Char<char16_t>;
+// using char32 = types::Char<char32_t>;
 
 
 // Pointer types

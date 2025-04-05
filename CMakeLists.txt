@@ -16,9 +16,11 @@ set(HEADER_FILES
     includes/TemplatesTypes/Bool.hpp
     includes/TemplatesTypes/String.hpp
     includes/BaseFunctions/Print.hpp
+    include/BaseFunctions/FunctionConvertTypes.hpp
     includes/BaseFunctionsObjects.hpp
     includes/CustomFunctionsFromStandartLibrary/CustomFormat.hpp
     includes/TemplatesTypes/Pointer.hpp
+    includes/CustomException/ExceptionCheckTypes/ExceptionTypes.hpp
 )
 
 include_directories(includes/)
