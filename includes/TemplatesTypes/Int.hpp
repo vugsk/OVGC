@@ -11,6 +11,7 @@
 #include <istream>
 
 #include "BaseFunctions/FunctionConvertTypes.hpp"
+#include "RestrictionsForTemplates/RestrictionsForTypes.hpp"
 
 // #include "Common.hpp"
 // #include "Bool.hpp"
@@ -19,6 +20,7 @@ namespace types
 {
 
 template<typename PrimitiveTypeInteger>
+    requires restrictions_for_templates::types::isNumber<PrimitiveTypeInteger>
 class Int
 {
 private:
@@ -26,17 +28,15 @@ private:
 
 public:
     template<typename TypeNumber>
-        requires std::is_integral_v<TypeNumber> &&
-                 (!std::is_same_v<TypeNumber, char>)
+        requires restrictions_for_templates::types::isNumber<PrimitiveTypeInteger>
     constexpr explicit Int(TypeNumber&& num)
-        : _value(static_cast<PrimitiveTypeInteger>(std::move(num))) {}
+        : _value(static_cast<PrimitiveTypeInteger>(std::forward<TypeNumber>(num))) {}
 
-    template<typename TypeChar> requires std::is_same_v<TypeChar, char>
-    constexpr explicit Int(TypeChar&& ch)
+    constexpr explicit Int(char&& ch)
         : _value(base_functions::ConvertCharToInteger<PrimitiveTypeInteger>(ch)) {}
 
-    template<typename TypeString> requires std::is_same_v<TypeString, const char*>
-    constexpr explicit Int(TypeString&& str) {}
+    constexpr explicit Int(const char* const& str)
+        : _value(base_functions::ConvertStringToInteger<PrimitiveTypeInteger>(str)) {}
 
     constexpr PrimitiveTypeInteger getValue() const
     {

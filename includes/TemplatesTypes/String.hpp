@@ -13,7 +13,7 @@
 namespace types
 {
 
-template<concepts::isObjectChar C>
+// template<concepts::isObjectChar C>
 class String
 {
 // private:

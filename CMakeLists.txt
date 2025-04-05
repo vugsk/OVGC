@@ -10,17 +10,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(HEADER_FILES
     includes/TemplatesTypes/Int.hpp
     includes/Types.hpp
-    includes/TemplatesTypes/Char.hpp
-    includes/TemplatesTypes/Common.hpp
-    includes/TemplatesTypes/Float.hpp
-    includes/TemplatesTypes/Bool.hpp
-    includes/TemplatesTypes/String.hpp
-    includes/BaseFunctions/Print.hpp
+#    includes/TemplatesTypes/Char.hpp
+#    includes/TemplatesTypes/Common.hpp
+#    includes/TemplatesTypes/Float.hpp
+#    includes/TemplatesTypes/Bool.hpp
+#    includes/TemplatesTypes/String.hpp
+#    includes/BaseFunctions/Print.hpp
     include/BaseFunctions/FunctionConvertTypes.hpp
     includes/BaseFunctionsObjects.hpp
-    includes/CustomFunctionsFromStandartLibrary/CustomFormat.hpp
-    includes/TemplatesTypes/Pointer.hpp
+#    includes/CustomFunctionsFromStandartLibrary/CustomFormat.hpp
+#    includes/TemplatesTypes/Pointer.hpp
     includes/CustomException/ExceptionCheckTypes/ExceptionTypes.hpp
+    includes/RestrictionsForTemplates/RestrictionsForTypes.hpp
 )
 
 include_directories(includes/)
@@ -40,5 +41,9 @@ else()
         add_executable(${NAME_PROJECT} src/main.cpp)
     endif()
     target_include_directories(${NAME_PROJECT} PUBLIC ${HEADER_FILES})
+    target_compile_definitions(
+        ${NAME_PROJECT} PRIVATE
+        $<IF:$<CONFIG:Debug>,DEBUG_BASE_FUNCTION,>
+    )
 endif()
 
